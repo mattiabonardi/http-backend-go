@@ -10,11 +10,18 @@ func Init() {
 	router := gin.New()
 	// create controllers
 	monitoring := new(controllers.MonitoringController)
-	// create resources
+	authentication := new(controllers.AuthenticationController)
 
+	// create resources
 	// monitoring
 	router.GET("/readyz", monitoring.Status)
 	router.GET("/livez", monitoring.Status)
+
+	// api v1
+	v1 := router.Group("v1")
+
+	// authentication
+	v1.POST("/login", authentication.Login)
 
 	// start http server
 	router.Run()

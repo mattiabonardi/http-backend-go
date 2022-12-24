@@ -1,30 +1,35 @@
 package managers
 
 import (
+	"errors"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt"
+	"github.com/mattiabonardi/http-backend-go/types"
 )
 
-// Jwt token data
-type TokenData struct {
-	SessionId string
-	Username  string
-	Role      string
+const secret = "fidsfskfposkfpsofk"
+const accessTokenexpirationMillis = 30 * 60000
+const refreshTokenexpirationMillis = 120 * 60000
+
+func SignAccessToken(TokenData types.TokenData) (string, error) {
+	return signToken(TokenData, accessTokenexpirationMillis, "access")
 }
 
-const secret = "fidsfskfposkfpsofk"
-const expirationMillis = 30 * 60000
+func SignRefreshToken(TokenData types.TokenData) (string, error) {
+	return signToken(TokenData, refreshTokenexpirationMillis, "refresh")
+}
 
 // sign jwt token
-func signToken(TokenData TokenData) (string, error) {
+func signToken(TokenData types.TokenData, expiration int, tokenType string) (string, error) {
 	// set token data
 	claims := &jwt.MapClaims{
-		"exp": time.Now().Add(expirationMillis).Unix(),
+		"exp": time.Now().Add(time.Duration(expiration)).Unix(),
 		"data": map[string]string{
 			"sessionId": TokenData.SessionId,
 			"username":  TokenData.Username,
-			"role":      TokenData.Role,
+			"type":      tokenType,
 		},
 	}
 	// sign token
@@ -32,9 +37,17 @@ func signToken(TokenData TokenData) (string, error) {
 	return token.SignedString(secret)
 }
 
+func VerifyAccessToken(tokenString string) (types.TokenData, error) {
+	return verifyToken(tokenString, "accessToken")
+}
+
+func VerifyRefreshToken(tokenString string) (types.TokenData, error) {
+	return verifyToken(tokenString, "refreshToken")
+}
+
 // verify token and return decoded TokenData
-func verifyToken(tokenString string) (TokenData, error) {
-	TokenData := TokenData{}
+func verifyToken(tokenString string, tokenType string) (types.TokenData, error) {
+	TokenData := types.TokenData{}
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return []byte(secret), nil
 	})
@@ -45,6 +58,11 @@ func verifyToken(tokenString string) (TokenData, error) {
 	data := claims["data"].(map[string]interface{})
 	TokenData.SessionId = data["sessionId"].(string)
 	TokenData.Username = data["username"].(string)
-	TokenData.Role = data["role"].(string)
-	return TokenData, nil
+	tType := data["type"].(string)
+	if strings.Compare(tType, tokenType) == 0 {
+		return TokenData, nil
+	} else {
+		return TokenData, errors.New("token verification error")
+	}
+
 }
