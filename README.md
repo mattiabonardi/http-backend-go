@@ -1,5 +1,5 @@
 # Http Backend GO
-**Http backend GO** is a generic backend template based on [Gin framework](https://github.com/gin-gonic/gin). The application has already integrated:
+**Http backend GO** is a generic backend template based on [Gin framework](https://github.com/gin-gonic/gin). The application has already offers:
 
 - Monitoring API (livez, readyz, metrics)
 - Authentication API based on [JWT](https://github.com/golang-jwt/jwt)
