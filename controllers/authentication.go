@@ -15,8 +15,8 @@ func (h AuthenticationController) Login(c *gin.Context) {
 	LoginRequestDTO := types.LoginRequestDTO{}
 	LoginResponseDTO := types.LoginResponseDTO{}
 	// get body
-	if err := c.BindJSON(&LoginRequestDTO); err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
+	if err := c.ShouldBindJSON(&LoginRequestDTO); err != nil {
+		managers.ThrowBadRequest(c, err)
 		return
 	}
 	// create token data
@@ -26,20 +26,18 @@ func (h AuthenticationController) Login(c *gin.Context) {
 	// sign access token
 	accessToken, err := managers.SignAccessToken(TokenData)
 	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
+		managers.ThrowUnauthorize(c, err)
 		return
 	}
-
 	// sign refresh token
 	refreshToken, err := managers.SignRefreshToken(TokenData)
 	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
+		managers.ThrowUnauthorize(c, err)
 		return
 	}
-
+	// create response
 	LoginResponseDTO.AccessToken = accessToken
 	LoginResponseDTO.RefreshToken = refreshToken
 	LoginResponseDTO.Message = "Login successfull"
-
 	c.JSON(http.StatusOK, LoginResponseDTO)
 }

@@ -9,23 +9,22 @@ import (
 	"github.com/mattiabonardi/http-backend-go/types"
 )
 
-const secret = "fidsfskfposkfpsofk"
-const accessTokenexpirationMillis = 30 * 60000
-const refreshTokenexpirationMillis = 120 * 60000
+var jwtKey = []byte("my_secret_key")
 
 func SignAccessToken(TokenData types.TokenData) (string, error) {
-	return signToken(TokenData, accessTokenexpirationMillis, "access")
+	return signToken(TokenData, 30, "accessToken")
 }
 
 func SignRefreshToken(TokenData types.TokenData) (string, error) {
-	return signToken(TokenData, refreshTokenexpirationMillis, "refresh")
+	return signToken(TokenData, 120, "refreshToken")
 }
 
 // sign jwt token
-func signToken(TokenData types.TokenData, expiration int, tokenType string) (string, error) {
+func signToken(TokenData types.TokenData, expiration time.Duration, tokenType string) (string, error) {
 	// set token data
 	claims := &jwt.MapClaims{
-		"exp": time.Now().Add(time.Duration(expiration)).Unix(),
+		"IssuedAt":  time.Now().Unix(),
+		"ExpiresAt": time.Now().Add(expiration * time.Minute).Unix(),
 		"data": map[string]string{
 			"sessionId": TokenData.SessionId,
 			"username":  TokenData.Username,
@@ -33,8 +32,8 @@ func signToken(TokenData types.TokenData, expiration int, tokenType string) (str
 		},
 	}
 	// sign token
-	token := jwt.NewWithClaims(jwt.SigningMethodEdDSA, claims)
-	return token.SignedString(secret)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString(jwtKey)
 }
 
 func VerifyAccessToken(tokenString string) (types.TokenData, error) {
@@ -48,13 +47,13 @@ func VerifyRefreshToken(tokenString string) (types.TokenData, error) {
 // verify token and return decoded TokenData
 func verifyToken(tokenString string, tokenType string) (types.TokenData, error) {
 	TokenData := types.TokenData{}
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return []byte(secret), nil
+	claims := jwt.MapClaims{}
+	_, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte(jwtKey), nil
 	})
 	if err != nil {
 		return TokenData, err
 	}
-	claims := token.Claims.(jwt.MapClaims)
 	data := claims["data"].(map[string]interface{})
 	TokenData.SessionId = data["sessionId"].(string)
 	TokenData.Username = data["username"].(string)
@@ -64,5 +63,4 @@ func verifyToken(tokenString string, tokenType string) (types.TokenData, error) 
 	} else {
 		return TokenData, errors.New("token verification error")
 	}
-
 }
