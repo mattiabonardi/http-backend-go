@@ -17,7 +17,7 @@ func Init() {
 	authController := new(controllers.AuthenticationController)
 
 	// swagger
-	router.StaticFS("/swagger/", http.Dir("swagger"))
+	router.StaticFS("/public/", http.Dir("public"))
 
 	// create resources
 	// monitoring
