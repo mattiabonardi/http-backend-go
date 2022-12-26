@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -36,8 +37,39 @@ func (h AuthenticationController) Login(c *gin.Context) {
 		return
 	}
 	// create response
-	LoginResponseDTO.AccessToken = accessToken
-	LoginResponseDTO.RefreshToken = refreshToken
+	LoginResponseDTO.AccessToken = "Bearer " + accessToken
+	LoginResponseDTO.RefreshToken = "Bearer " + refreshToken
 	LoginResponseDTO.Message = "Login successfull"
+	c.JSON(http.StatusOK, LoginResponseDTO)
+}
+
+func (h AuthenticationController) RefreshToken(c *gin.Context) {
+	RefreshTokenRequestDTO := types.RefreshTokenRequestDTO{}
+	LoginResponseDTO := types.LoginResponseDTO{}
+	// get body
+	if err := c.ShouldBindJSON(&RefreshTokenRequestDTO); err != nil {
+		managers.ThrowBadRequest(c, err)
+		return
+	}
+	// remove Bearer constant
+	RefreshTokenRequestDTO.RefreshToken = strings.ReplaceAll(RefreshTokenRequestDTO.RefreshToken, "Bearer ", "")
+	// verify refresh token
+	TokenData, err := managers.VerifyRefreshToken(RefreshTokenRequestDTO.RefreshToken)
+	if err != nil {
+		managers.ThrowUnauthorize(c, err)
+		return
+	}
+	// create new session id
+	TokenData.SessionId = uuid.New().String()
+	// sign new access token
+	accessToken, err := managers.SignAccessToken(TokenData)
+	if err != nil {
+		managers.ThrowUnauthorize(c, err)
+		return
+	}
+	// create response
+	LoginResponseDTO.AccessToken = "Bearer " + accessToken
+	LoginResponseDTO.RefreshToken = "Bearer " + RefreshTokenRequestDTO.RefreshToken
+	LoginResponseDTO.Message = "Refresh token successfull"
 	c.JSON(http.StatusOK, LoginResponseDTO)
 }

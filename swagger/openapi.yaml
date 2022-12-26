@@ -1,0 +1,91 @@
+---
+openapi: "3.0.0"
+info:
+  title: Http Backend GO
+  description: Api Docs
+  version: 2.0.0
+servers:
+  - url: /
+paths:
+  /livez:
+    get:
+      tags:
+      - health
+      operationId: Livez
+      responses:
+        default:
+          description: no description
+        "200":
+          description: OK
+  /readyz:
+    get:
+      tags:
+      - health
+      operationId: Readyz
+      responses:
+        default:
+          description: no description
+        "200":
+          description: OK
+  /metrics:
+    get:
+      tags:
+      - health
+      operationId: Metrics
+      responses:
+        default:
+          description: no description
+        "200":
+          description: OK
+  /api/v1/authentication/login:
+    post:
+      tags:
+      - authentication
+      operationId: Login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              required:
+              - username
+              - password
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+                  format: password
+      responses:
+        default:
+          description: no description
+        "200":
+          description: OK
+  /api/v1/authentication/refresh_token:
+    post:
+      tags:
+      - authentication
+      operationId: Refresh token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              required:
+              - refreshToken
+              type: object
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        default:
+          description: no description
+        "200":
+          description: OK
+      security:
+      - bearerAuth: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
