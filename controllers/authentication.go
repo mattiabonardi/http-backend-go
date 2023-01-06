@@ -43,6 +43,10 @@ func (h AuthenticationController) Login(c *gin.Context) {
 	c.JSON(http.StatusOK, LoginResponseDTO)
 }
 
+func (h AuthenticationController) Logout(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"message": "Logout successfull"})
+}
+
 func (h AuthenticationController) RefreshToken(c *gin.Context) {
 	RefreshTokenRequestDTO := types.RefreshTokenRequestDTO{}
 	LoginResponseDTO := types.LoginResponseDTO{}

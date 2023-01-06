@@ -33,7 +33,8 @@ func Init() {
 	// authentication
 	authentication := v1.Group("authentication")
 	authentication.POST("/login", authController.Login)
-	authentication.POST("/refresh_token", middlewares.AuthorizationMiddleware, authController.RefreshToken)
+	authentication.POST("/logout", middlewares.AuthorizationMiddleware, authController.Logout)
+	authentication.POST("/refresh_token", authController.RefreshToken)
 
 	// start http server
 	router.Run()

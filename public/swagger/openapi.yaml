@@ -61,6 +61,18 @@ paths:
           description: no description
         "200":
           description: OK
+  /api/v1/authentication/logout:
+    post:
+      tags:
+        - authentication
+      operationId: Logout
+      responses:
+        default:
+          description: no description
+        "200":
+          description: OK
+      security:
+        - bearerAuth: []
   /api/v1/authentication/refresh_token:
     post:
       tags:
@@ -81,8 +93,6 @@ paths:
           description: no description
         "200":
           description: OK
-      security:
-      - bearerAuth: []
 components:
   securitySchemes:
     bearerAuth:
