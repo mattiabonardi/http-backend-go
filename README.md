@@ -1,4 +1,7 @@
 # Http Backend GO
+
+![logo](logo.png)  
+
 **Http backend GO** is a generic backend template based on [Gin framework](https://github.com/gin-gonic/gin). The application has already offers:
 
 - Monitoring API (livez, readyz, metrics)
